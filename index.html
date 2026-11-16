@@ -23,16 +23,6 @@ iframe{border:0;width:100%;height:100%;background:#111}
 #news div.n{font-size:13px;line-height:16px;margin-bottom:5px;max-height:32px;overflow:hidden}
 </style>
 </head>
- <script>
-var t=new XMLHttpRequest();
-t.open('GET','https://api.open-meteo.com/v1/forecast?latitude=49.84&longitude=24.03&current=temperature_2m&timezone=Europe%2FKyiv',true);
-t.onreadystatechange=function(){
- if(t.readyState===4){
-  document.getElementById('wloc').innerHTML='ТЕСТ: статус '+t.status+' '+t.responseText.substring(0,70);
- }
-};
-t.send();
- </script>
 <body>
 
 <div class="box" id="map"><iframe id="fmap"></iframe></div>
@@ -76,4 +66,51 @@ function wcode(c){
  if(c>=51&&c<=57)return 'Мряка';
  if(c>=61&&c<=67)return 'Дощ';
  if(c>=71&&c<=77)return 'Сніг';
- if(c>=80&&c
+ if(c>=80&&c<=82)return 'Злива';
+ if(c===85||c===86)return 'Снігопад';
+ if(c>=95)return 'Гроза';
+ return '';
+}
+function loadWeather(){
+ var x=new XMLHttpRequest();
+ x.open('GET','https://api.open-meteo.com/v1/forecast?latitude=49.84&longitude=24.03&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&wind_speed_unit=ms&timezone=Europe%2FKyiv&forecast_days=1',true);
+ x.onreadystatechange=function(){
+  if(x.readyState!==4)return;
+  try{
+   if(x.status!==200){document.getElementById('wdesc').innerHTML='Погода: помилка '+x.status;return;}
+   var j=JSON.parse(x.responseText),c=j.current,d=j.daily;
+   document.getElementById('temp').innerHTML=Math.round(c.temperature_2m)+'°';
+   document.getElementById('wdesc').innerHTML=wcode(c.weather_code)+' (відчувається '+Math.round(c.apparent_temperature)+'°)';
+   document.getElementById('wmore').innerHTML='Сьогодні '+Math.round(d.temperature_2m_min[0])+'…'+Math.round(d.temperature_2m_max[0])+'° · вітер '+Math.round(c.wind_speed_10m)+' м/с · опади '+d.precipitation_probability_max[0]+'%';
+  }catch(e){
+   document.getElementById('wdesc').innerHTML='Погода: збій '+e.message;
+  }
+ };
+ x.send();
+}
+function loadNews(){
+ var x=new XMLHttpRequest();
+ x.open('GET','https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent('https://www.pravda.com.ua/rss/view_news/'),true);
+ x.onreadystatechange=function(){
+  if(x.readyState!==4)return;
+  var el=document.getElementById('nlist');
+  try{
+   if(x.status!==200){el.innerHTML='Новини: помилка '+x.status;return;}
+   var it=JSON.parse(x.responseText).items||[],h='',i;
+   for(i=0;i<it.length&&i<5;i++){h+='<div class="n">'+it[i].title+'</div>';}
+   el.innerHTML=h||'Новини: порожньо';
+  }catch(e){
+   el.innerHTML='Новини: збій '+e.message;
+  }
+ };
+ x.send();
+}
+loadWeather();
+loadNews();
+setInterval(loadWeather,900000);
+setInterval(loadNews,300000);
+document.getElementById('fradar').src='https://www.rainviewer.com/map.html?loc=49.84,24.03,7&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=1&c=3&o=83&lm=1&layer=radar&sm=1&sn=1';
+document.getElementById('fmap').src='https://map.war-monitor.org/';
+</script>
+</body>
+</html>
