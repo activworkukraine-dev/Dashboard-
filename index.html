@@ -23,6 +23,16 @@ iframe{border:0;width:100%;height:100%;background:#111}
 #news div.n{font-size:13px;line-height:16px;margin-bottom:5px;max-height:32px;overflow:hidden}
 </style>
 </head>
+ <script>
+var t=new XMLHttpRequest();
+t.open('GET','https://api.open-meteo.com/v1/forecast?latitude=49.84&longitude=24.03&current=temperature_2m&timezone=Europe%2FKyiv',true);
+t.onreadystatechange=function(){
+ if(t.readyState===4){
+  document.getElementById('wloc').innerHTML='ТЕСТ: статус '+t.status+' '+t.responseText.substring(0,70);
+ }
+};
+t.send();
+ </script>
 <body>
 
 <div class="box" id="map"><iframe id="fmap"></iframe></div>
