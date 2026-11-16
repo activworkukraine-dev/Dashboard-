@@ -21,12 +21,11 @@ iframe{border:0;width:100%;height:100%;background:#111}
 #news{left:60%;top:68%;width:40%;height:32%;padding:6px 14px;border-left:1px solid #222;border-top:1px solid #222;background:#111821}
 #news h3{margin:0 0 4px;font-size:13px;color:#e8a33d;text-transform:uppercase}
 #news div.n{font-size:13px;line-height:16px;margin-bottom:5px;max-height:32px;overflow:hidden}
-#news span{color:#6b7d8f}
 </style>
 </head>
 <body>
 
-<div class="box" id="map"><iframe id="fmap" src="https://map.war-monitor.org/"></iframe></div>
+<div class="box" id="map"><iframe id="fmap"></iframe></div>
 
 <div class="box" id="clock"><div id="time">--:--</div><div id="date"></div></div>
 
@@ -40,34 +39,25 @@ iframe{border:0;width:100%;height:100%;background:#111}
 <div class="box" id="radar"><iframe id="fradar"></iframe></div>
 
 <div class="box" id="news"><h3>Останні новини</h3><div id="nlist"></div></div>
-<script>document.getElementById('date').innerHTML='JS працює';</script>
+
 <script>
-var LAT = 49.84, LON = 24.03;
-var RSS = 'https://www.pravda.com.ua/rss/view_news/';
-var RADAR = 'https://www.rainviewer.com/map.html?loc=' + LAT + ',' + LON + ',7&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=1&c=3&o=83&lm=1&layer=radar&sm=1&sn=1';
-var MAP = 'https://map.war-monitor.org/';
+window.onerror=function(m,u,l){document.getElementById('wloc').innerHTML='ПОМИЛКА: '+m+' (рядок '+l+')';};
+</script>
 
+<script>
 function pad(n){return n<10?'0'+n:''+n;}
-var DAYS=['неділя','понеділок','вівторок','середа','четвер','пʼятниця','субота'];
+var DAYS=['неділя','понеділок','вівторок','середа','четвер','пятниця','субота'];
 var MONTHS=['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
-
 function tick(){
  var d=new Date();
  document.getElementById('time').innerHTML=pad(d.getHours())+':'+pad(d.getMinutes());
  document.getElementById('date').innerHTML=DAYS[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();
 }
+tick();
+setInterval(tick,10000);
+</script>
 
-function get(url,cb){
- var x=new XMLHttpRequest();
- x.open('GET',url,true);
- x.onreadystatechange=function(){
-  if(x.readyState===4){
-   if(x.status===200){try{cb(JSON.parse(x.responseText));}catch(e){}}
-  }
- };
- x.send();
-}
-
+<script>
 function wcode(c){
  if(c===0)return 'Ясно';
  if(c<=2)return 'Мінлива хмарність';
@@ -76,29 +66,4 @@ function wcode(c){
  if(c>=51&&c<=57)return 'Мряка';
  if(c>=61&&c<=67)return 'Дощ';
  if(c>=71&&c<=77)return 'Сніг';
- if(c>=80&&c<=82)return 'Злива';
- if(c===85||c===86)return 'Снігопад';
- if(c>=95)return 'Гроза';
- return '';
-}
-
-function weather(){
- var u='https://api.open-meteo.com/v1/forecast?latitude='+LAT+'&longitude='+LON+
- '&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation'+
- '&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max'+
- '&wind_speed_unit=ms&timezone=Europe%2FKyiv&forecast_days=1';
- get(u,function(j){
-  var c=j.current,d=j.daily;
-  document.getElementById('temp').innerHTML=Math.round(c.temperature_2m)+'°';
-  document.getElementById('wdesc').innerHTML=wcode(c.weather_code)+' (відчувається '+Math.round(c.apparent_temperature)+'°)';
-  document.getElementById('wmore').innerHTML='Сьогодні '+Math.round(d.temperature_2m_min[0])+'…'+Math.round(d.temperature_2m_max[0])+'° · вітер '+Math.round(c.wind_speed_10m)+' м/с · опади '+d.precipitation_probability_max[0]+'%';
- });
-}
-
-function news(){
- get('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(RSS),function(j){
-  var it=j.items||[],h='',i,t,dt;
-  for(i=0;i<it.length&&i<5;i++){
-   dt=new Date((it[i].pubDate||'').replace(/-/g,'/'));
-   t=isNaN(dt.getTime())?'':pad(dt.getHours())+':'+pad(dt.getMinutes())+' ';
-   h+='<div class="n"><span>'+t+'</span>'+it[i].title+'
+ if(c>=80&&c
