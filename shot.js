@@ -12,7 +12,13 @@ const { chromium } = require('playwright');
     ] 
   });
   
-  const p = await b.newPage({ viewport: { width: 614, height: 600 } });
+  // Створюємо контекст із реалістичним User-Agent, щоб сайт не бачив у нас робота
+  const context = await b.newContext({
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    viewport: { width: 1024, height: 768 }
+  });
+
+  const p = await context.newPage();
   
   try {
     console.log('Navigating to map...');
@@ -22,7 +28,7 @@ const { chromium } = require('playwright');
     console.log('goto error: ' + e.message);
   }
 
-  // Даємо час на завантаження та рендеринг шарів карти (Mapbox/Leaflet)
+  // Даємо час на завантаження та рендеринг шарів карти
   console.log('Waiting for tiles to render...');
   await p.waitForTimeout(15000);
   
